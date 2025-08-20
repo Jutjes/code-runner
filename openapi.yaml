@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Code Runner API
+  version: "1.0.0"
+  description: |
+    Eenvoudige service om Python-code te draaien en pytest-tests uit te voeren.
+    LET OP: timeouts en outputlimieten zijn actief.
+servers:
+  - url: https://<jouw-deploy-domein>        # bv. https://code-runner.onrender.com
+paths:
+  /ping:
+    get:
+      operationId: ping
+      summary: Health check
+      responses:
+        "200":
+          description: Server alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  message: { type: string }
+
+  /run:
+    post:
+      operationId: runCode
+      summary: Run Python code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Python source code
+                stdin:
+                  type: string
+                  description: Optional stdin
+                timeout_sec:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                  default: 5
+      responses:
+        "200":
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  stdout: { type: string }
+                  stderr: { type: string }
+                  exit_code: { type: integer }
+
+  /test:
+    post:
+      operationId: runTests
+      summary: Run pytest tests for provided code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, tests]
+              properties:
+                code:
+                  type: string
+                  description: Content of solution.py
+                tests:
+                  type: string
+                  description: Content of test_solution.py (pytest)
+                timeout_sec:
+                  type: integer
+                  minimum: 1
+                  maximum: 20
+                  default: 5
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  summary: { type: string }
+                  stdout: { type: string }
+                  stderr: { type: string }
+                  exit_code: { type: integer }
